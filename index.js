@@ -9,10 +9,12 @@ var Finalizer = function Finalizer() {
 };
 
 Finalizer.prototype.wrap = function (func) {
-    return (...args) => {
+    return () => {
+        var args = Array.prototype.slice.call(arguments);
         this.calls += 1;
         var callback = args.pop();
-        args.push((...cb_args) => {
+        args.push(() => {
+            var cb_args = Array.prototype.slice.call(arguments);
             this.calls -= 1;
 
             callback.apply(null, cb_args);
@@ -26,10 +28,12 @@ Finalizer.prototype.wrap = function (func) {
 };
 
 Finalizer.prototype.wrap_auto = function (func) {
-    return (...args) => {
+    return () => {
+        var args = Array.prototype.slice.call(arguments);
         this.calls += 1;
         var callback = args.shift();
-        args.unshift((...cb_args) => {
+        args.unshift(() => {
+            var cb_args = Array.prototype.slice.call(arguments);
             this.calls -= 1;
 
             callback.apply(null, cb_args);
@@ -43,7 +47,8 @@ Finalizer.prototype.wrap_auto = function (func) {
 };
 
 Finalizer.prototype.callback = function (callback) {
-    var cb_func = (...args) => {
+    var cb_func = () => {
+        var args = Array.prototype.slice.call(arguments);
         if (this.calls > 0) {
             if (!this.final_callback) {
                 this.final_callback = callback;
