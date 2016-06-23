@@ -9,11 +9,11 @@ var Finalizer = function Finalizer() {
 };
 
 Finalizer.prototype.wrap = function (func) {
-    return () => {
+    return function () {
         var args = Array.prototype.slice.call(arguments);
         this.calls += 1;
         var callback = args.pop();
-        args.push(() => {
+        args.push(function () {
             var cb_args = Array.prototype.slice.call(arguments);
             this.calls -= 1;
 
@@ -21,18 +21,18 @@ Finalizer.prototype.wrap = function (func) {
             if (this.calls === 0 && this.final_callback) {
                 return this.final_callback.apply(null, this.final_callback_args);
             }
-        });
+        }.bind(this));
 
         return func.apply(null, args);
-    };
+    }.bind(this);
 };
 
 Finalizer.prototype.wrap_auto = function (func) {
-    return () => {
+    return function () {
         var args = Array.prototype.slice.call(arguments);
         this.calls += 1;
         var callback = args.shift();
-        args.unshift(() => {
+        args.unshift(function () {
             var cb_args = Array.prototype.slice.call(arguments);
             this.calls -= 1;
 
@@ -40,14 +40,14 @@ Finalizer.prototype.wrap_auto = function (func) {
             if (this.calls === 0 && this.final_callback) {
                 return this.final_callback.apply(null, this.final_callback_args);
             }
-        });
+        }.bind(this));
 
         return func.apply(null, args);
-    };
+    }.bind(this);
 };
 
 Finalizer.prototype.callback = function (callback) {
-    var cb_func = () => {
+    var cb_func = function () {
         var args = Array.prototype.slice.call(arguments);
         if (this.calls > 0) {
             if (!this.final_callback) {
@@ -57,7 +57,7 @@ Finalizer.prototype.callback = function (callback) {
             return;
         }
         callback.apply(null, args);
-    };
+    }.bind(this);
     return cb_func;
 };
 
