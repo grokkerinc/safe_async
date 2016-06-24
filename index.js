@@ -47,6 +47,7 @@ Finalizer.prototype.wrap_auto = function (func) {
 };
 
 Finalizer.prototype.callback = function (callback) {
+    callback = callback || function () { return; };
     var cb_func = function () {
         var args = Array.prototype.slice.call(arguments);
         if (this.calls > 0) {
