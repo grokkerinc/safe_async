@@ -6,19 +6,25 @@ var Finalizer = function Finalizer() {
     this.calls = 0;
     this.final_callback = null;
     this.final_callback_args = null;
+    this.final_callback_called = false;
 };
 
 Finalizer.prototype.wrap = function (func) {
     return function () {
         var args = Array.prototype.slice.call(arguments);
-        this.calls += 1;
         var callback = args.pop();
+        if (this.final_callback_called) {
+            // this can happen in dependent async.auto() tasks
+            return setImmediate(callback, new Error('final callback already called'));
+        }
+        this.calls += 1;
         args.push(function () {
             var cb_args = Array.prototype.slice.call(arguments);
             this.calls -= 1;
 
             callback.apply(null, cb_args);
-            if (this.calls === 0 && this.final_callback) {
+            if (this.calls === 0 && this.final_callback && !this.final_callback_called) {
+                this.final_callback_called = true;
                 return this.final_callback.apply(null, this.final_callback_args);
             }
         }.bind(this));
@@ -30,14 +36,19 @@ Finalizer.prototype.wrap = function (func) {
 Finalizer.prototype.wrap_auto = function (func) {
     return function () {
         var args = Array.prototype.slice.call(arguments);
-        this.calls += 1;
         var callback = args.shift();
+        if (this.final_callback_called) {
+            // this can happen in dependent async.auto() tasks
+            return setImmediate(callback, new Error('final callback already called'));
+        }
+        this.calls += 1;
         args.unshift(function () {
             var cb_args = Array.prototype.slice.call(arguments);
             this.calls -= 1;
 
             callback.apply(null, cb_args);
-            if (this.calls === 0 && this.final_callback) {
+            if (this.calls === 0 && this.final_callback && !this.final_callback_called) {
+                this.final_callback_called = true;
                 return this.final_callback.apply(null, this.final_callback_args);
             }
         }.bind(this));
@@ -57,6 +68,7 @@ Finalizer.prototype.callback = function (callback) {
             }
             return;
         }
+        this.final_callback_called = true;
         callback.apply(null, args);
     }.bind(this);
     return cb_func;
@@ -122,7 +134,14 @@ var wrapped_functions = {
             }
             tasks[task_name] = arr_or_func;
         });
-        return async.auto(tasks, concurrency, f.callback(cb));
+        var args = [tasks];
+        if ((typeof concurrency) === 'function') {
+            cb = concurrency;
+        } else {
+            args.push(concurrency);
+        }
+        args.push(f.callback(cb));
+        return async.auto.apply(async, args);
     }
 };
 
