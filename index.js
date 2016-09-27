@@ -146,7 +146,8 @@ var wrapped_functions = {
 };
 
 var exports = {};
-Object.keys(async).forEach(name => exports[name] = async[name]);
+var remove = ['applyEach', 'every', 'reject'];
+Object.keys(async).filter(func => remove.indexOf(func) === -1).forEach(name => exports[name] = async[name]);
 Object.keys(wrapped_functions).forEach(name => exports[name] = wrapped_functions[name]);
 
 module.exports = exports;
