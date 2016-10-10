@@ -75,33 +75,13 @@ Finalizer.prototype.callback = function (callback) {
 };
 
 var wrapped_functions = {
-    each: (arr, iterator, cb) => {
-        var f = new Finalizer();
-        return async.each(arr, f.wrap(iterator), f.callback(cb));
-    },
     eachLimit: (arr, limit, iterator, cb) => {
         var f = new Finalizer();
         return async.eachLimit(arr, limit, f.wrap(iterator), f.callback(cb));
     },
-    map: (arr, iterator, cb) => {
-        var f = new Finalizer();
-        return async.map(arr, f.wrap(iterator), f.callback(cb));
-    },
     mapLimit: (arr, limit, iterator, cb) => {
         var f = new Finalizer();
         return async.mapLimit(arr, limit, f.wrap(iterator), f.callback(cb));
-    },
-    parallel: (arr_or_obj, cb) => {
-        var f = new Finalizer();
-        if (Array.isArray(arr_or_obj)) {
-            arr_or_obj = arr_or_obj.map(func => f.wrap(func));
-        } else {
-            arr_or_obj = Object.keys(arr_or_obj).reduce((obj, func_name) => {
-                obj[func_name] = f.wrap(arr_or_obj[func_name]);
-                return obj;
-            }, {});
-        }
-        return async.parallel(arr_or_obj, f.callback(cb));
     },
     parallelLimit: (arr_or_obj, limit, cb) => {
         var f = new Finalizer();
@@ -114,10 +94,6 @@ var wrapped_functions = {
             }, {});
         }
         return async.parallelLimit(arr_or_obj, limit, f.callback(cb));
-    },
-    times: (n, iterator, cb) => {
-        var f = new Finalizer();
-        return async.times(n, f.wrap(iterator), f.callback(cb));
     },
     timesLimit: (n, limit, iterator, cb) => {
         var f = new Finalizer();
@@ -146,7 +122,7 @@ var wrapped_functions = {
 };
 
 var exports = {};
-var remove = ['applyEach', 'every', 'reject'];
+var remove = ['each', 'forEachOf', 'map', 'filter', 'reject', 'detect', 'some', 'every', 'concat', 'parrallel', 'applyEach', 'times'];
 Object.keys(async).filter(func => remove.indexOf(func) === -1).forEach(name => exports[name] = async[name]);
 Object.keys(wrapped_functions).forEach(name => exports[name] = wrapped_functions[name]);
 
