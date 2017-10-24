@@ -122,7 +122,7 @@ var wrapped_functions = {
 };
 
 var exports = {};
-var remove = ['each', 'forEachOf', 'map', 'filter', 'reject', 'detect', 'some', 'every', 'concat', 'parrallel', 'applyEach', 'times'];
+var remove = ['each', 'forEachOf', 'map', 'filter', 'reject', 'detect', 'some', 'every', 'concat', 'parallel', 'applyEach', 'times'];
 Object.keys(async).filter(func => remove.indexOf(func) === -1).forEach(name => exports[name] = async[name]);
 Object.keys(wrapped_functions).forEach(name => exports[name] = wrapped_functions[name]);
 
