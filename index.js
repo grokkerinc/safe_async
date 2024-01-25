@@ -33,10 +33,17 @@ Finalizer.prototype.wrap = function (func) {
     }.bind(this);
 };
 
+/**
+ * Async 2.0 and above provides the callback argument as the last argument, but we're used to receiving it as the first argument.
+ * Rather than change all of our async.auto calls, we switch the callback to be the first argument here.
+ *
+ * @param {Function} func Original task function
+ * @returns {Function} Wrapped task function
+ */
 Finalizer.prototype.wrap_auto = function (func) {
     return function () {
         var args = Array.prototype.slice.call(arguments);
-        var callback = args.shift();
+        var callback = args.pop();
         if (this.final_callback_called) {
             // this can happen in dependent async.auto() tasks
             return setImmediate(callback, new Error('final callback already called'));
