@@ -1,6 +1,6 @@
 {
   "name": "safe_async",
-  "version": "1.5.2-7",
+  "version": "2.6.4",
   "description": "Provides almost the same interface as async, but where all the callback to the various functions won't be called until all started tasks have finished. Not early exit on error. Also, any limitable function must be limited.",
   "repository": {
     "type": "git",
@@ -8,6 +8,6 @@
   },
   "license": "MIT",
   "dependencies": {
-    "async": "^1.5.2"
+    "async": "2.6.4"
   }
 }
